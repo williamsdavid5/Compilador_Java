@@ -78,6 +78,8 @@ public class Inicio extends javax.swing.JFrame {
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         editorArea.setColumns(20);
+        editorArea.setFont(new java.awt.Font("Consolas", 0, 12)); // NOI18N
+        editorArea.setLineWrap(true);
         editorArea.setRows(5);
         jScrollPane3.setViewportView(editorArea);
 
