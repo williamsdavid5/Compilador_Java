@@ -11,8 +11,11 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.text.BadLocationException;
+import util.Parser;
 
 import util.analisadorLexico;
+import util.Token;
 
 /**
  *
@@ -66,8 +69,8 @@ public class Inicio extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         terminalArea = new javax.swing.JTextArea();
         jPanel3 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        logArea = new javax.swing.JTextArea();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        logArea = new javax.swing.JTextPane();
         menuSuperior = new javax.swing.JMenuBar();
         TemasMenuSuperior = new javax.swing.JMenu();
 
@@ -149,25 +152,17 @@ public class Inicio extends javax.swing.JFrame {
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Log"));
 
-        logArea.setEditable(false);
-        logArea.setColumns(20);
-        logArea.setRows(5);
-        jScrollPane2.setViewportView(logArea);
+        jScrollPane4.setViewportView(logArea);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2)
-                .addContainerGap())
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane2)
-                .addContainerGap())
+            .addComponent(jScrollPane4)
         );
 
         TemasMenuSuperior.setText("Temas");
@@ -210,13 +205,32 @@ public class Inicio extends javax.swing.JFrame {
     private void botaoExecutarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoExecutarActionPerformed
         String codigo = editorArea.getText();
         System.out.println(codigo);
-        List<analisadorLexico.Token> tokens = analisador.tokenize(codigo);
+        List<Token> tokens = analisador.tokenize(codigo);
         tokens.forEach(System.out::println);
-        
-        for (analisadorLexico.Token token:tokens) {
-            logArea.setText(logArea.getText() + token.toString() + "\n");
+
+        try {
+            logArea.getDocument().insertString(logArea.getDocument().getLength(), "----------------------\nCompilando\n", null);
+        }   catch (BadLocationException e) {
+            e.printStackTrace();
+            
         }
         
+        for (Token token : tokens) {
+            try {
+                logArea.getDocument().insertString(logArea.getDocument().getLength(), token.toString() + "\n", null);
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            logArea.getDocument().insertString(logArea.getDocument().getLength(), "\n", null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
+        Parser parser = new Parser(tokens, logArea);
+        parser.parse();
     }//GEN-LAST:event_botaoExecutarActionPerformed
 
     /**
@@ -244,9 +258,9 @@ public class Inicio extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextArea logArea;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JTextPane logArea;
     private javax.swing.JMenuBar menuSuperior;
     private javax.swing.JTextArea terminalArea;
     // End of variables declaration//GEN-END:variables

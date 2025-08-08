@@ -19,20 +19,7 @@ public class analisadorLexico {
     
     // objeto/classe token
     //um token possui seu valor e seu identificador, que é o tipo
-    public static class Token {
-        public TokenType type;
-        public String value;
-        
-        public Token(TokenType type, String value) {
-            this.type = type;
-            this.value = value;
-        }
-        
-        @Override
-        public String toString() {
-            return "[" + type + ": " + value + "]";
-        }
-    }
+
     
     //lista de palavras do java
     private static final Set<String> keywords = Set.of(
