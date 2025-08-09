@@ -54,6 +54,7 @@ public class Parser {
     }
 
     private void parseProgram() {
+        insertLog("\n-Programa detectado", null);
         while (!isAtEnd()) {
             parseStatement();
         }
@@ -65,19 +66,22 @@ public class Parser {
     }
 
     private void parseDeclaration() {
-        insertLog("parse declaração...\n", null);
+        insertLog("\n-Declaração detectada", null);
         parseType();
         expect(TokenType.IDENTIFIER, null);
 
         if (match(TokenType.OPERATOR, "=")) {
+            insertLog("\n-Encontrou o '=', expressão detectada", null);
             parseExpression();
         }
     }
 
     private void parseType() {
-        insertLog("parse tipo...\n", null);
 
         Token token = advance();
+        
+        insertLog("\n-Tipo detectado: " + token.value, null);
+        
         if (!(token.type == TokenType.KEYWORD && validTypes.contains(token.value))) {
             insertLog("--------\nERRO!\nTipo inválido: " + token.value + "\n\n", errorStyle);
             error("Esperado tipo primitivo, encontrado: " + token.value);
@@ -86,6 +90,9 @@ public class Parser {
 
     private void parseExpression() {
         Token token = advance();
+        
+        insertLog("\n-token: " + token, null);
+        
         boolean isValid =
                 token.type == TokenType.NUMBER ||
                 token.type == TokenType.STRING ||
@@ -129,9 +136,12 @@ public class Parser {
     }
 
     private void expect(TokenType type, String value) {
+        
+        insertLog("\n-verificando token: " + (value != null ? value : type), null);
+        
         if (!match(type, value)) {
-            insertLog("Esperado token " + (value != null ? value : type) + "\n", errorStyle);
-            error("Esperado token " + (value != null ? value : type));
+            insertLog("\n----------\nToken inválido: " + (value != null ? value : type) + "\n", errorStyle);
+            error("\nEsperado token " + (value != null ? value : type));
         }
     }
 

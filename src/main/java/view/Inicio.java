@@ -209,7 +209,7 @@ public class Inicio extends javax.swing.JFrame {
         tokens.forEach(System.out::println);
 
         try {
-            logArea.getDocument().insertString(logArea.getDocument().getLength(), "----------------------\nCompilando\n", null);
+            logArea.getDocument().insertString(logArea.getDocument().getLength(), "\n\n----------------------\nCompilando\n", null);
         }   catch (BadLocationException e) {
             e.printStackTrace();
             
