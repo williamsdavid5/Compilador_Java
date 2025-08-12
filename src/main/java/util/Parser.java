@@ -61,8 +61,35 @@ public class Parser {
     }
 
     private void parseStatement() {
-        parseDeclaration();
-        expect(TokenType.SEPARATOR, ";");
+        Token first = peek();
+
+        if (first.type == TokenType.KEYWORD && validTypes.contains(first.value)) {
+            parseDeclaration();
+            expect(TokenType.SEPARATOR, ";");
+
+        } else if (first.type == TokenType.IDENTIFIER) {
+            parseAssignment();
+            expect(TokenType.SEPARATOR, ";");
+
+        } else {
+            insertLog("\n----------\nComando inválido iniciado por: " + first.value + "\n", errorStyle);
+            error("Esperado declaração ou atribuição");
+        }
+    }
+    
+    private void parseAssignment() {
+        insertLog("\n-Atribuição detectada", null);
+
+        // IDENTIFICADOR
+        Token id = advance();
+        insertLog("\n-Identificador detectado: " + id.value, null);
+
+        // "="
+        expect(TokenType.OPERATOR, "=");
+        insertLog("\n-Operador '=' detectado", null);
+
+        // Expressão
+        parseExpression();
     }
 
     private void parseDeclaration() {

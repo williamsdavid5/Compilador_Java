@@ -31,6 +31,8 @@ public class analisadorLexico {
         List<Token> tokens = new ArrayList<>();
         
         // Regex básica para quebrar o código
+        //este objeto funciona como um automato
+        //se baseando na regex enviada, ele cria algo que funcione como ela (ou seja, um autonomo)
         Pattern pattern = Pattern.compile(
             "(//.*)|" +                      // Comentários
             "(\".*?\")|" +                   // Strings
@@ -40,20 +42,25 @@ public class analisadorLexico {
             "|[(){};.,]"                     // Separadores
         );
         
-        Matcher matcher = pattern.matcher(input);
+        Matcher matcher = pattern.matcher(input); //matcher é o mecanismo responsável por passar o texto pela regex
         
         System.out.println(matcher);
         
+        //é apenas aqui que o texto é passado na regex
         while (matcher.find()) {
-            String token = matcher.group();
+            String token = matcher.group(); //a ocorrencia atual é "puxada" por esse metodo
+            //na proxima repetição, será a outra ocorrencia
             
+            //cada vez que algo é encontrado, é verificado onde se encaixa
+            //startsWith é para termos em que precismos verificar apenas o inicio
+            //comentários por exemplo, é apenas duas barras seguidas de qualquer coisa
             if (token.startsWith("//")) {
                 tokens.add(new Token(TokenType.COMMENT, token));
                 
             } else if (token.startsWith("\"")) {
                 tokens.add(new Token(TokenType.STRING, token));
                 
-            } else if (token.matches("\\d+")) {
+            } else if (token.matches("\\d+")) { //matches verifica o trecho inteiro de uma vez
                 tokens.add(new Token(TokenType.NUMBER, token));
                 
             } else if (keywords.contains(token)) {
