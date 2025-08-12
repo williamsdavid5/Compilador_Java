@@ -147,20 +147,78 @@ public class Parser {
     }
 
     private void parseExpression() {
-        Token token = advance();
-        
-        insertLog("\n-token: " + token, null);
-        
-        boolean isValid =
-                token.type == TokenType.NUMBER ||
-                token.type == TokenType.STRING ||
-                token.type == TokenType.IDENTIFIER ||
-                (token.type == TokenType.KEYWORD && (token.value.equals("true") || token.value.equals("false")));
-
-        if (!isValid) {
-            insertLog("\nExpressão inválida: " + token.value + "\n", errorStyle);
-            error("Expressão inválida: " + token.value);
+        insertLog("\n-Expressão detectada", null);
+        parseTerm();
+        // enquanto achar + ou -
+        while (true) {
+            if (match(TokenType.OPERATOR, "+") || match(TokenType.OPERATOR, "-")) {
+                Token op = tokens.get(position - 1); // token do operador que foi consumido
+                insertLog("\n-Operador aditivo detectado: " + op.value, null);
+                parseTerm();
+            } else {
+                break;
+            }
         }
+    }
+
+    private void parseTerm() {
+        parseFactor();
+        // enquanto achar * ou /
+        while (true) {
+            if (match(TokenType.OPERATOR, "*") || match(TokenType.OPERATOR, "/")) {
+                Token op = tokens.get(position - 1);
+                insertLog("\n-Operador multiplicativo detectado: " + op.value, null);
+                parseFactor();
+            } else {
+                break;
+            }
+        }
+    }
+
+    private void parseFactor() {
+        Token tok = peek();
+
+        // número literal
+        if (tok.type == TokenType.NUMBER) {
+            Token num = advance();
+            insertLog("\n-Número detectado: " + num.value, null);
+            return;
+        }
+
+        // string literal
+        if (tok.type == TokenType.STRING) {
+            Token s = advance();
+            insertLog("\n-String detectada: " + s.value, null);
+            return;
+        }
+
+        // identificador
+        if (tok.type == TokenType.IDENTIFIER) {
+            Token id = advance();
+            insertLog("\n-Identificador detectado: " + id.value, null);
+            return;
+        }
+
+        // boolean literal (true/false) tokenizados como KEYWORD no seu lexer
+        if (tok.type == TokenType.KEYWORD &&
+            (tok.value.equals("true") || tok.value.equals("false"))) {
+            Token b = advance();
+            insertLog("\n-Boolean detectado: " + b.value, null);
+            return;
+        }
+
+        // subexpressão entre parênteses
+        if (match(TokenType.SEPARATOR, "(")) {
+            insertLog("\n-Abertura de parênteses '('", null);
+            parseExpression();
+            expect(TokenType.SEPARATOR, ")");
+            insertLog("\n-Fechamento de parênteses ')'", null);
+            return;
+        }
+
+        // nenhum caso válido
+        insertLog("\nFator inválido: " + tok.value + "\n", errorStyle);
+        error("Fator inválido: " + tok.value);
     }
     
     private void parseIf() {
@@ -168,12 +226,20 @@ public class Parser {
         advance(); // consome o 'if'
 
         expect(TokenType.SEPARATOR, "(");
-        parseExpression();
+        parseCondition(); // <- agora usa condição
         expect(TokenType.SEPARATOR, ")");
 
         expect(TokenType.SEPARATOR, "{");
         while (!match(TokenType.SEPARATOR, "}")) {
             parseStatement();
+        }
+
+        // else opcional
+        if (match(TokenType.KEYWORD, "else")) {
+            expect(TokenType.SEPARATOR, "{");
+            while (!match(TokenType.SEPARATOR, "}")) {
+                parseStatement();
+            }
         }
     }
 
@@ -182,7 +248,7 @@ public class Parser {
         advance(); // consome o 'while'
 
         expect(TokenType.SEPARATOR, "(");
-        parseExpression();
+        parseCondition(); // <- agora usa condição
         expect(TokenType.SEPARATOR, ")");
 
         expect(TokenType.SEPARATOR, "{");
@@ -191,6 +257,31 @@ public class Parser {
         }
     }
 
+    private void parseCondition() {
+        insertLog("\n-Condição detectada", null);
+
+        // Expressão da esquerda
+        parseExpression();
+
+        // Verifica operador relacional sem avançar por engano
+        Token opToken = peek();
+        boolean isRelOp = opToken.type == TokenType.OPERATOR &&
+            (opToken.value.equals("==") || opToken.value.equals("!=") ||
+             opToken.value.equals("<")  || opToken.value.equals(">")  ||
+             opToken.value.equals("<=") || opToken.value.equals(">="));
+
+        if (!isRelOp) {
+            insertLog("\nOperador relacional inválido: " + opToken.value + "\n", errorStyle);
+            error("Esperado operador relacional, encontrado: " + opToken.value);
+        }
+
+        // consome o operador relacional (sabemos que é válido)
+        Token op = advance();
+        insertLog("\n-Operador relacional detectado: " + op.value, null);
+
+        // Expressão da direita
+        parseExpression();
+    }
 
     // Utilitários
     private boolean isAtEnd() {
