@@ -23,7 +23,7 @@ public class analisadorLexico {
     
     //lista de palavras do java
     private static final Set<String> keywords = Set.of(
-           "int", "float", "if", "else", "for", "while", "return", "public", "class", "static", "void", "new", "String", "boolean", "true", "false" 
+           "int", "float", "if", "else", "for", "while", "return", "public", "class", "static", "void", "new", "String", "boolean", "true", "false", "System.out.println" 
     );
     
     //função que faz o reconhecimento
@@ -37,6 +37,7 @@ public class analisadorLexico {
             "(//.*)|" +                      // Comentários
             "(\".*?\")|" +                   // Strings
             "\\b\\d+\\b|" +                  // Números
+            "(System\\.out\\.println)|" +
             "[a-zA-Z_][a-zA-Z_0-9]*|" +      // Identificadores/palavras-chave
             "[+\\-*/=<>!&|]+" +              // Operadores
             "|[(){};.,]"                     // Separadores

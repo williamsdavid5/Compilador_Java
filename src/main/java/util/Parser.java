@@ -71,11 +71,42 @@ public class Parser {
             parseAssignment();
             expect(TokenType.SEPARATOR, ";");
 
+        } else if (first.type == TokenType.KEYWORD && first.value.equals("System.out.println")) {
+            parsePrint();
+            expect(TokenType.SEPARATOR, ";");
+
+        } else if (first.type == TokenType.KEYWORD && first.value.equals("if")) {
+            parseIf();
+
+        } else if (first.type == TokenType.KEYWORD && first.value.equals("while")) {
+            parseWhile();
+
         } else {
             insertLog("\n----------\nComando inválido iniciado por: " + first.value + "\n", errorStyle);
-            error("Esperado declaração ou atribuição");
+            error("Esperado declaração, atribuição, impressão, if ou while");
         }
     }
+
+
+    private void parsePrint() {
+        insertLog("\n-Comando de impressão detectado", null);
+
+        // PRINT
+        Token printToken = advance();
+        insertLog("\n-Keyword detectada: " + printToken.value, null);
+
+        // "("
+        expect(TokenType.SEPARATOR, "(");
+        insertLog("\n-Aberto parêntese '('", null);
+
+        // Expressão dentro do print
+        parseExpression();
+
+        // ")"
+        expect(TokenType.SEPARATOR, ")");
+        insertLog("\n-Fechado parêntese ')'", null);
+    }
+
     
     private void parseAssignment() {
         insertLog("\n-Atribuição detectada", null);
@@ -127,10 +158,39 @@ public class Parser {
                 (token.type == TokenType.KEYWORD && (token.value.equals("true") || token.value.equals("false")));
 
         if (!isValid) {
-            insertLog("Expressão inválida: " + token.value + "\n", errorStyle);
+            insertLog("\nExpressão inválida: " + token.value + "\n", errorStyle);
             error("Expressão inválida: " + token.value);
         }
     }
+    
+    private void parseIf() {
+        insertLog("\n-Comando 'if' detectado", null);
+        advance(); // consome o 'if'
+
+        expect(TokenType.SEPARATOR, "(");
+        parseExpression();
+        expect(TokenType.SEPARATOR, ")");
+
+        expect(TokenType.SEPARATOR, "{");
+        while (!match(TokenType.SEPARATOR, "}")) {
+            parseStatement();
+        }
+    }
+
+    private void parseWhile() {
+        insertLog("\n-Comando 'while' detectado", null);
+        advance(); // consome o 'while'
+
+        expect(TokenType.SEPARATOR, "(");
+        parseExpression();
+        expect(TokenType.SEPARATOR, ")");
+
+        expect(TokenType.SEPARATOR, "{");
+        while (!match(TokenType.SEPARATOR, "}")) {
+            parseStatement();
+        }
+    }
+
 
     // Utilitários
     private boolean isAtEnd() {
@@ -167,7 +227,7 @@ public class Parser {
         insertLog("\n-verificando token: " + (value != null ? value : type), null);
         
         if (!match(type, value)) {
-            insertLog("\n----------\nToken inválido: " + (value != null ? value : type) + "\n", errorStyle);
+            insertLog("\n----------\nToken esperado: " + (value != null ? value : type) + "\n", errorStyle);
             error("\nEsperado token " + (value != null ? value : type));
         }
     }
