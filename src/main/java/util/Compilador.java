@@ -14,24 +14,17 @@ import javax.swing.JTextArea;
 
 public class Compilador {
     
+    private PrintStream printStream;
     private JTextArea terminal;
     
-    public Compilador(JTextArea terminal) {
+    public Compilador(PrintStream printStream, JTextArea terminal) {
+        this.printStream = printStream;
         this.terminal = terminal;
     }
-    
-    PrintStream printStream = new PrintStream(new OutputStream() {
-        @Override
-        public void write(int b) throws IOException {
-            terminal.append(String.valueOf((char) b));
-        }
-    });
 
     
     public void compilar(String codigo) throws Exception {
         terminal.append("Compilando na JVM...\nSaída:\n\n");
-        PrintStream originalOut = System.out;
-        System.setOut(printStream);
         
         File codigoFile = new File("MinhaClasse.java");
         
@@ -66,8 +59,6 @@ public class Compilador {
         Method main = cls.getDeclaredMethod("main", String[].class);
         String[] args = new String[]{};
         main.invoke(null, (Object) args);
-        
-        System.setOut(originalOut);
     }
 }
 

@@ -7,6 +7,9 @@ package view;
 import com.formdev.flatlaf.intellijthemes.FlatCarbonIJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
 import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -331,8 +334,11 @@ public class Inicio extends javax.swing.JFrame {
         }
         
         try {
-            Compilador compilador = new Compilador(terminalArea);
+            Compilador compilador = new Compilador(printStream, terminalArea);
+            PrintStream originalOut = System.out;
+            System.setOut(printStream);
             compilador.compilar(editorArea.getText());
+            System.setOut(originalOut);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -351,6 +357,13 @@ public class Inicio extends javax.swing.JFrame {
         terminalArea.setText("");
     }//GEN-LAST:event_limparTerminalActionPerformed
 
+    PrintStream printStream = new PrintStream(new OutputStream() {
+        @Override
+        public void write(int b) throws IOException {
+            terminalArea.append(String.valueOf((char) b));
+        }
+    });
+    
     /**
      * @param args the command line arguments
      */
