@@ -9,6 +9,7 @@ import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
 import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.BadLocationException;
@@ -64,6 +65,7 @@ public class Inicio extends javax.swing.JFrame {
         editorArea = new javax.swing.JTextArea();
         botaoExecutar = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
+        passoAPasso = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -97,6 +99,8 @@ public class Inicio extends javax.swing.JFrame {
 
         jLabel3.setText("Editor");
 
+        passoAPasso.setText("Passo a passo");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -108,6 +112,8 @@ public class Inicio extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(passoAPasso)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(botaoExecutar)))
                 .addContainerGap())
         );
@@ -116,7 +122,8 @@ public class Inicio extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(botaoExecutar)
-                    .addComponent(jLabel3))
+                    .addComponent(jLabel3)
+                    .addComponent(passoAPasso))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
                 .addContainerGap())
@@ -240,8 +247,20 @@ public class Inicio extends javax.swing.JFrame {
             e.printStackTrace();
         }
 
-        Parser parser = new Parser(tokens, logArea, arvoreDerivacao);
-        parser.parse();
+        if (passoAPasso.isSelected()) {
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    Parser parser = new Parser(tokens, logArea, arvoreDerivacao, passoAPasso);
+                    parser.parse();
+                    return null;
+                }
+            };
+            worker.execute();
+        } else {
+            Parser parser = new Parser(tokens, logArea, arvoreDerivacao, passoAPasso);
+            parser.parse();
+        }
     }//GEN-LAST:event_botaoExecutarActionPerformed
 
     /**
@@ -275,6 +294,7 @@ public class Inicio extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTextPane logArea;
     private javax.swing.JMenuBar menuSuperior;
+    private javax.swing.JCheckBox passoAPasso;
     private javax.swing.JTextArea terminalArea;
     // End of variables declaration//GEN-END:variables
 }
