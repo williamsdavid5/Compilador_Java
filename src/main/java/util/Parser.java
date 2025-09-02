@@ -578,17 +578,18 @@ public class Parser {
     // Método utilitário para expect que retorna o token
     private Token expectWithReturn(TokenType type, String value) {
         insertLog("\n-Esperando token: " + (value != null ? value : type), null);
-        
+
         if (isAtEnd()) {
             error("Fim inesperado dos tokens");
         }
-        
+
         Token token = peek();
+
         if (token.type != type || (value != null && !token.value.equals(value))) {
             insertLog("\n----------\nToken esperado: " + (value != null ? value : type) + "\n", errorStyle);
             error("Esperado token " + (value != null ? value : type));
         }
-        
+
         advance();
         insertLog("\n-Token " + (value != null ? value : type) + " encontrado", null);
         applyDelay();
@@ -625,7 +626,15 @@ public class Parser {
             insertLog("Fim inesperado dos tokens.\n", errorStyle);
             error("Fim inesperado dos tokens.");
         }
-        return tokens.get(position++);
+
+        Token token = tokens.get(position++);
+
+        while (token.type == TokenType.COMMENT && !isAtEnd()) {
+            insertLog("[Pulando comentário: " + token.value + "]\n", null);
+            token = tokens.get(position++);
+        }
+
+        return token;
     }
 
     private Token peek() {
@@ -633,16 +642,36 @@ public class Parser {
             insertLog("Fim inesperado dos tokens.\n", errorStyle);
             error("Fim inesperado dos tokens.");
         }
-        return tokens.get(position);
+
+        Token token = tokens.get(position);
+
+        while (token.type == TokenType.COMMENT && (position + 1) < tokens.size()) {
+            insertLog("[Pulando comentário no peek: " + token.value + "]\n", null);
+            position++;
+            token = tokens.get(position);
+        }
+
+        return token;
     }
 
     private boolean match(TokenType type, String value) {
         if (isAtEnd()) return false;
+
         Token token = peek();
+
         if (token.type != type) return false;
         if (value != null && !token.value.equals(value)) return false;
+
         advance();
         return true;
+    }
+    
+    private void skipComments() {
+        while (!isAtEnd() && tokens.get(position).type == TokenType.COMMENT) {
+            Token comment = tokens.get(position);
+            insertLog("[Pulando comentário: " + comment.value + "]\n", null);
+            position++;
+        }
     }
 
     private void expect(TokenType type, String value) {
