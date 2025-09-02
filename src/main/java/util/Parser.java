@@ -29,6 +29,7 @@ public class Parser {
     private StyledDocument doc;
     private Style defaultStyle;
     private Style errorStyle;
+    private Style highlightStyle;
     
     private int delayMillis = 500; // Delay de 0.5 segundos
     
@@ -50,6 +51,15 @@ public class Parser {
         this.doc = log.getStyledDocument();
         this.errorStyle = log.addStyle("error", null);
         StyleConstants.setForeground(errorStyle, java.awt.Color.RED);
+        
+        try {
+            defaultStyle = log.addStyle("default", null);
+            StyleConstants.setFontFamily(defaultStyle, "Monospaced");
+            highlightStyle = log.addStyle("highlight", null);
+            StyleConstants.setBold(highlightStyle, true);
+        } catch (Exception e) {
+            // ignora
+        }
     }
 
     private void applyDelay() {
@@ -110,7 +120,7 @@ public class Parser {
         while (!isAtEnd()) {
             DefaultMutableTreeNode statementNode = parseStatement();
             if (statementNode != null) {
-                programNode.add(statementNode);
+                attach(programNode, statementNode);
                 applyDelay();
             }
         }
@@ -127,33 +137,33 @@ public class Parser {
 
         if (first.type == TokenType.KEYWORD && validTypes.contains(first.value)) {
             DefaultMutableTreeNode declNode = parseDeclaration();
-            statementNode.add(declNode);
+            attach(statementNode, declNode);
             expect(TokenType.SEPARATOR, ";");
             addNode(statementNode, ";");
             applyDelay();
 
         } else if (first.type == TokenType.IDENTIFIER) {
             DefaultMutableTreeNode assignNode = parseAssignment();
-            statementNode.add(assignNode);
+            attach(statementNode, assignNode);
             expect(TokenType.SEPARATOR, ";");
             addNode(statementNode, ";");
             applyDelay();
 
         } else if (first.type == TokenType.KEYWORD && first.value.equals("System.out.println")) {
             DefaultMutableTreeNode printNode = parsePrint();
-            statementNode.add(printNode);
+            attach(statementNode, printNode);
             expect(TokenType.SEPARATOR, ";");
             addNode(statementNode, ";");
             applyDelay();
 
         } else if (first.type == TokenType.KEYWORD && first.value.equals("if")) {
             DefaultMutableTreeNode ifNode = parseIf();
-            statementNode.add(ifNode);
+            attach(statementNode, ifNode);
             applyDelay();
 
         } else if (first.type == TokenType.KEYWORD && first.value.equals("while")) {
             DefaultMutableTreeNode whileNode = parseWhile();
-            statementNode.add(whileNode);
+            attach(statementNode, whileNode);
             applyDelay();
 
         } else {
@@ -183,7 +193,7 @@ public class Parser {
 
         // Expressão dentro do print
         DefaultMutableTreeNode exprNode = parseExpression();
-        printNode.add(exprNode);
+        attach(printNode, exprNode);
         applyDelay();
 
         // ")"
@@ -214,7 +224,7 @@ public class Parser {
 
         // Expressão
         DefaultMutableTreeNode exprNode = parseExpression();
-        assignNode.add(exprNode);
+        attach(assignNode, exprNode);
         applyDelay();
         
         return assignNode;
@@ -226,7 +236,7 @@ public class Parser {
         applyDelay();
         
         DefaultMutableTreeNode typeNode = parseType();
-        declNode.add(typeNode);
+        attach(declNode, typeNode);
         applyDelay();
         
         Token identifier = expectWithReturn(TokenType.IDENTIFIER, null);
@@ -238,7 +248,7 @@ public class Parser {
             insertLog("\n-Encontrou o '=', expressão detectada", null);
             applyDelay();
             DefaultMutableTreeNode exprNode = parseExpression();
-            declNode.add(exprNode);
+            attach(declNode, exprNode);
             applyDelay();
         }
         
@@ -266,7 +276,7 @@ public class Parser {
         applyDelay();
         
         DefaultMutableTreeNode leftNode = parseTerm();
-        exprNode.add(leftNode);
+        attach(exprNode, leftNode);
         applyDelay();
         
         // enquanto achar + ou -
@@ -278,7 +288,7 @@ public class Parser {
                 applyDelay();
                 
                 DefaultMutableTreeNode rightNode = parseTerm();
-                opNode.add(rightNode);
+                attach(opNode, rightNode);
                 applyDelay();
             } else {
                 break;
@@ -293,7 +303,7 @@ public class Parser {
         applyDelay();
         
         DefaultMutableTreeNode leftNode = parseFactor();
-        termNode.add(leftNode);
+        attach(termNode, leftNode);
         applyDelay();
         
         // enquanto achar * ou /
@@ -305,7 +315,7 @@ public class Parser {
                 applyDelay();
                 
                 DefaultMutableTreeNode rightNode = parseFactor();
-                opNode.add(rightNode);
+                attach(opNode, rightNode);
                 applyDelay();
             } else {
                 break;
@@ -364,7 +374,7 @@ public class Parser {
             applyDelay();
             
             DefaultMutableTreeNode exprNode = parseExpression();
-            factorNode.add(exprNode);
+            attach(factorNode, exprNode);
             applyDelay();
             
             expect(TokenType.SEPARATOR, ")");
@@ -394,7 +404,7 @@ public class Parser {
         applyDelay();
         
         DefaultMutableTreeNode condNode = parseCondition();
-        ifNode.add(condNode);
+        attach(ifNode, condNode);
         applyDelay();
         
         expect(TokenType.SEPARATOR, ")");
@@ -409,7 +419,7 @@ public class Parser {
         applyDelay();
         while (!match(TokenType.SEPARATOR, "}")) {
             DefaultMutableTreeNode stmtNode = parseStatement();
-            bodyNode.add(stmtNode);
+            attach(bodyNode, stmtNode);
             applyDelay();
         }
         addNode(ifNode, "}");
@@ -429,7 +439,7 @@ public class Parser {
             applyDelay();
             while (!match(TokenType.SEPARATOR, "}")) {
                 DefaultMutableTreeNode stmtNode = parseStatement();
-                elseBodyNode.add(stmtNode);
+                attach(elseBodyNode, stmtNode);
                 applyDelay();
             }
             addNode(elseNode, "}");
@@ -453,7 +463,7 @@ public class Parser {
         applyDelay();
         
         DefaultMutableTreeNode condNode = parseCondition();
-        whileNode.add(condNode);
+        attach(whileNode, condNode);
         applyDelay();
         
         expect(TokenType.SEPARATOR, ")");
@@ -468,7 +478,7 @@ public class Parser {
         applyDelay();
         while (!match(TokenType.SEPARATOR, "}")) {
             DefaultMutableTreeNode stmtNode = parseStatement();
-            bodyNode.add(stmtNode);
+            attach(bodyNode, stmtNode);
             applyDelay();
         }
         addNode(whileNode, "}");
@@ -484,7 +494,7 @@ public class Parser {
 
         // Expressão da esquerda
         DefaultMutableTreeNode leftExpr = parseExpression();
-        condNode.add(leftExpr);
+        attach(condNode, leftExpr);
         applyDelay();
 
         // Operador relacional
@@ -506,56 +516,65 @@ public class Parser {
 
         // Expressão da direita
         DefaultMutableTreeNode rightExpr = parseExpression();
-        opNode.add(rightExpr);
+        attach(opNode, rightExpr);
         applyDelay();
         
         return condNode;
     }
 
-    // Método auxiliar para adicionar nós à árvore
+    // Método auxiliar para adicionar nós à árvore (THREAD-SAFE)
     private DefaultMutableTreeNode addNode(DefaultMutableTreeNode parent, String text) {
         DefaultMutableTreeNode node = new DefaultMutableTreeNode(text);
 
         if (parent != null) {
-            // Adiciona o nó ao parent
-            parent.add(node);
-
-            // Atualiza a árvore visualmente após cada nó adicionado
-            if (passoAPasso != null && passoAPasso.isSelected()) {
-                SwingUtilities.invokeLater(() -> {
-                    // Usa nodesWereInserted para atualização eficiente
-                    int[] childIndices = new int[]{parent.getChildCount() - 1};
-                    Object[] children = new Object[]{node};
-                    treeModel.nodesWereInserted(parent, childIndices);
-
-                    // Expande o parent para mostrar o novo nó
-                    TreeNode[] path = parent.getPath();
-                    TreePath treePath = new TreePath(path);
-                    arvoreDerivacao.expandPath(treePath);
-
-                    // Rola até o novo nó
-                    TreePath newPath = treePath.pathByAddingChild(node);
-                    arvoreDerivacao.scrollPathToVisible(newPath);
-
-                    // Força repaint imediato
-                    arvoreDerivacao.repaint();
-                });
-            }
-        } else {
-            // Se não tem parent, é o nó raiz
-            rootNode.add(node);
-            if (passoAPasso != null && passoAPasso.isSelected()) {
-                SwingUtilities.invokeLater(() -> {
-                    treeModel.reload();
-                    expandAllTreeNodes();
-                    arvoreDerivacao.repaint();
-                });
+            Runnable insertTask = () -> {
+                treeModel.insertNodeInto(node, parent, parent.getChildCount());
+                if (passoAPasso != null && passoAPasso.isSelected()) {
+                    ensureTreeVisible();
+                }
+            };
+            
+            if (SwingUtilities.isEventDispatchThread()) {
+                insertTask.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(insertTask);
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(insertTask);
+                }
             }
         }
-
         return node;
     }
-    
+
+    // Método para anexar nós de forma segura (THREAD-SAFE)
+    private void attach(DefaultMutableTreeNode parent, DefaultMutableTreeNode child) {
+        if (parent == null || child == null) return;
+
+        Runnable attachTask = () -> {
+            // Remove do pai atual se existir
+            if (child.getParent() != null) {
+                treeModel.removeNodeFromParent(child);
+            }
+            // Insere no novo pai
+            treeModel.insertNodeInto(child, parent, parent.getChildCount());
+            
+            if (passoAPasso != null && passoAPasso.isSelected()) {
+                ensureTreeVisible();
+            }
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            attachTask.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(attachTask);
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(attachTask);
+            }
+        }
+    }
+
     // Método utilitário para expect que retorna o token
     private Token expectWithReturn(TokenType type, String value) {
         insertLog("\n-Esperando token: " + (value != null ? value : type), null);
@@ -574,6 +593,26 @@ public class Parser {
         insertLog("\n-Token " + (value != null ? value : type) + " encontrado", null);
         applyDelay();
         return token;
+    }
+
+    // Método para inserir log de forma thread-safe
+    private void insertLog(String text, Style style) {
+        Runnable logTask = () -> {
+            try {
+                doc.insertString(doc.getLength(), text, style);
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        };
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            logTask.run();
+        } else {
+            SwingUtilities.invokeLater(logTask);
+        }
+        
+        log.setCaretPosition(log.getDocument().getLength());
+
     }
 
     // Utilitários originais (mantidos)
@@ -607,18 +646,10 @@ public class Parser {
     }
 
     private void expect(TokenType type, String value) {
-        expectWithReturn(type, value); // Reutiliza o método que retorna token
+        expectWithReturn(type, value);
     }
 
     private void error(String message) {
         throw new RuntimeException("Erro de parsing: " + message);
-    }
-
-    private void insertLog(String text, Style style) {
-        try {
-            doc.insertString(doc.getLength(), text, style);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
     }
 }

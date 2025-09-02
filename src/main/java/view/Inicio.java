@@ -6,6 +6,7 @@ package view;
 
 import com.formdev.flatlaf.intellijthemes.FlatCarbonIJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
+import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
 import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -88,6 +89,7 @@ public class Inicio extends javax.swing.JFrame {
         editorArea.setFont(new java.awt.Font("Consolas", 0, 12)); // NOI18N
         editorArea.setLineWrap(true);
         editorArea.setRows(5);
+        editorArea.setTabSize(4);
         jScrollPane3.setViewportView(editorArea);
 
         botaoExecutar.setText("Executar");
@@ -272,7 +274,7 @@ public class Inicio extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
-        UIManager.setLookAndFeel(new FlatCarbonIJTheme());
+        UIManager.setLookAndFeel(new FlatMaterialDesignDarkIJTheme());
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new Inicio().setVisible(true));
