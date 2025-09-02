@@ -20,6 +20,7 @@ import util.Parser;
 
 import util.analisadorLexico;
 import util.Token;
+import util.Compilador;
 
 /**
  *
@@ -73,6 +74,7 @@ public class Inicio extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         terminalArea = new javax.swing.JTextArea();
+        limparTerminal = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         logArea = new javax.swing.JTextPane();
@@ -147,6 +149,13 @@ public class Inicio extends javax.swing.JFrame {
         terminalArea.setRows(5);
         jScrollPane1.setViewportView(terminalArea);
 
+        limparTerminal.setText("Limpar");
+        limparTerminal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                limparTerminalActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -154,7 +163,10 @@ public class Inicio extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(limparTerminal))
                     .addComponent(jScrollPane1))
                 .addContainerGap())
         );
@@ -162,7 +174,9 @@ public class Inicio extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(limparTerminal))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
                 .addContainerGap())
@@ -315,6 +329,13 @@ public class Inicio extends javax.swing.JFrame {
             Parser parser = new Parser(tokens, logArea, arvoreDerivacao, passoAPasso);
             parser.parse();
         }
+        
+        try {
+            Compilador compilador = new Compilador(terminalArea);
+            compilador.compilar(editorArea.getText());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_botaoExecutarActionPerformed
 
     private void limparLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_limparLogActionPerformed
@@ -325,6 +346,10 @@ public class Inicio extends javax.swing.JFrame {
         arvoreDerivacao.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
 
     }//GEN-LAST:event_limparArvoreActionPerformed
+
+    private void limparTerminalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_limparTerminalActionPerformed
+        terminalArea.setText("");
+    }//GEN-LAST:event_limparTerminalActionPerformed
 
     /**
      * @param args the command line arguments
@@ -358,6 +383,7 @@ public class Inicio extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JButton limparArvore;
     private javax.swing.JButton limparLog;
+    private javax.swing.JButton limparTerminal;
     private javax.swing.JTextPane logArea;
     private javax.swing.JMenuBar menuSuperior;
     private javax.swing.JCheckBox passoAPasso;

@@ -1,3 +1,4 @@
+util\Compilador.class
 view\Inicio.class
 util\Parser.class
 view\Inicio$1.class
@@ -6,3 +7,5 @@ view\Inicio$4.class
 view\Inicio$3.class
 util\Token.class
 util\analisadorLexico.class
+view\Inicio$5.class
+util\Compilador$1.class
