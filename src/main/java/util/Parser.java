@@ -12,6 +12,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import util.analisadorLexico.TokenType;
 
 public class Parser {
@@ -53,15 +55,7 @@ public class Parser {
     private void applyDelay() {
         if (passoAPasso != null && passoAPasso.isSelected()) {
             try {
-                // Atualiza a UI antes do delay
-                SwingUtilities.invokeLater(() -> {
-                    treeModel.reload();
-                    expandAllTreeNodes();
-                    log.setCaretPosition(log.getDocument().getLength()); // Auto-scroll
-                });
-
                 Thread.sleep(delayMillis);
-
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -72,6 +66,21 @@ public class Parser {
         for (int i = 0; i < arvoreDerivacao.getRowCount(); i++) {
             arvoreDerivacao.expandRow(i);
         }
+    }
+    
+    private void ensureTreeVisible() {
+        SwingUtilities.invokeLater(() -> {
+            expandAllTreeNodes();
+            
+            // Rola até o final da árvore
+            int rowCount = arvoreDerivacao.getRowCount();
+            if (rowCount > 0) {
+                arvoreDerivacao.scrollRowToVisible(rowCount - 1);
+            }
+            
+            // Força repaint para atualização visual imediata
+            arvoreDerivacao.repaint();
+        });
     }
     
     public void parse() {
@@ -106,7 +115,6 @@ public class Parser {
             }
         }
         
-        treeModel.reload(); // Atualiza a visualização da árvore
         applyDelay();
         
         return programNode;
@@ -507,12 +515,47 @@ public class Parser {
     // Método auxiliar para adicionar nós à árvore
     private DefaultMutableTreeNode addNode(DefaultMutableTreeNode parent, String text) {
         DefaultMutableTreeNode node = new DefaultMutableTreeNode(text);
+
         if (parent != null) {
+            // Adiciona o nó ao parent
             parent.add(node);
+
+            // Atualiza a árvore visualmente após cada nó adicionado
+            if (passoAPasso != null && passoAPasso.isSelected()) {
+                SwingUtilities.invokeLater(() -> {
+                    // Usa nodesWereInserted para atualização eficiente
+                    int[] childIndices = new int[]{parent.getChildCount() - 1};
+                    Object[] children = new Object[]{node};
+                    treeModel.nodesWereInserted(parent, childIndices);
+
+                    // Expande o parent para mostrar o novo nó
+                    TreeNode[] path = parent.getPath();
+                    TreePath treePath = new TreePath(path);
+                    arvoreDerivacao.expandPath(treePath);
+
+                    // Rola até o novo nó
+                    TreePath newPath = treePath.pathByAddingChild(node);
+                    arvoreDerivacao.scrollPathToVisible(newPath);
+
+                    // Força repaint imediato
+                    arvoreDerivacao.repaint();
+                });
+            }
+        } else {
+            // Se não tem parent, é o nó raiz
+            rootNode.add(node);
+            if (passoAPasso != null && passoAPasso.isSelected()) {
+                SwingUtilities.invokeLater(() -> {
+                    treeModel.reload();
+                    expandAllTreeNodes();
+                    arvoreDerivacao.repaint();
+                });
+            }
         }
+
         return node;
     }
-
+    
     // Método utilitário para expect que retorna o token
     private Token expectWithReturn(TokenType type, String value) {
         insertLog("\n-Esperando token: " + (value != null ? value : type), null);
