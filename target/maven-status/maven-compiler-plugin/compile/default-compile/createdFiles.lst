@@ -2,5 +2,6 @@ view\Inicio.class
 util\Parser.class
 view\Inicio$1.class
 util\analisadorLexico$TokenType.class
+view\Inicio$3.class
 util\Token.class
 util\analisadorLexico.class
